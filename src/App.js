@@ -1,9 +1,50 @@
 import React, { Component } from 'react';
+import request from 'request';
 import './normalize.css';
 import './skeleton.css';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      search: '',
+      results: [],
+    };
+
+    this.handleSearchChange = this.handleSearchChange.bind(this);
+    this.runSearch = this.runSearch.bind(this);
+  }
+
+  handleSearchChange(event) {
+    this.setState({search: event.target.value});
+  }
+
+  runSearch(event){
+    const hashtag = this.state.search;
+    const options = {
+      uri: 'https://tg24proy95.execute-api.us-east-1.amazonaws.com/prod/RelatedHashtags',
+      method: 'POST',
+      json: {
+        "hashtag": hashtag,
+      },
+    };
+
+    request(options, function (error, response, body) {
+      console.log(response);
+    });
+  }
+
   render() {
+    const tableBody = this.state.results.map((item) =>
+      <tr>
+        <td>{item.tag}</td>
+        <td>{item.count}</td>
+        <td><a href="/">Link</a></td>
+        <td><a href="/">Link</a></td>
+      </tr>
+    );
+
     return (
       <div className="container">
         <br />
@@ -15,10 +56,10 @@ class App extends Component {
 
         <div className="row">
           <div className="ten columns">
-            <input className="u-max-full-width u-full-width" type="text" placeholder="Enter hashtag here (including the # symbol)"/>
+            <input className="u-max-full-width u-full-width" type="text" value={this.state.search} placeholder="Enter hashtag here (including the # symbol)" onChange={this.handleSearchChange}/>
           </div>
           <div className="two columns">
-            <button className="button-primary">Run Search</button>
+            <button className="button-primary" onClick={this.runSearch}>Run Search</button>
           </div>
         </div>
 
@@ -34,12 +75,7 @@ class App extends Component {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>#netneutrality</td>
-                <td>99</td>
-                <td><a href="/">Link</a></td>
-                <td><a href="/">Link</a></td>
-              </tr>
+              {tableBody}
             </tbody>
           </table>
         </div>
