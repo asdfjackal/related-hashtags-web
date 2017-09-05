@@ -9,6 +9,7 @@ class App extends Component {
 
     this.state = {
       search: '',
+      cachedSearch: '',
       results: [],
     };
 
@@ -24,6 +25,7 @@ class App extends Component {
   runSearch(event){
     event.preventDefault();
     const hashtag = this.state.search;
+    this.setState({cachedSearch: hashtag})
     const options = {
       uri: 'https://tg24proy95.execute-api.us-east-1.amazonaws.com/prod/RelatedHashtags',
       method: 'POST',
@@ -60,7 +62,7 @@ class App extends Component {
   }
 
   render() {
-    const search = this.state.search;
+    const search = this.state.cachedSearch;
     const tableBody = this.state.results.map((item) =>
       <tr>
         <td>{item.tag}</td>
