@@ -39,7 +39,6 @@ class App extends Component {
 
   handleResponse(error, response, body){
     if (!error && response.statusCode === 200) {
-      console.log(body);
       const result = JSON.parse(body);
       const data = Object.keys(result).map((key) => {
         return {
