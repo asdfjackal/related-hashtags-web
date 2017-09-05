@@ -14,6 +14,7 @@ class App extends Component {
 
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.runSearch = this.runSearch.bind(this);
+    this.handleResponse = this.handleResponse.bind(this);
   }
 
   handleSearchChange(event) {
@@ -21,27 +22,51 @@ class App extends Component {
   }
 
   runSearch(event){
+    event.preventDefault();
     const hashtag = this.state.search;
     const options = {
       uri: 'https://tg24proy95.execute-api.us-east-1.amazonaws.com/prod/RelatedHashtags',
       method: 'POST',
-      json: {
+      body: JSON.stringify({
         "hashtag": hashtag,
-      },
+      }),
     };
 
-    request(options, function (error, response, body) {
-      console.log(response);
-    });
+    request(options, this.handleResponse);
+  }
+
+  handleResponse(error, response, body){
+    if (!error && response.statusCode === 200) {
+      console.log(body);
+      const result = JSON.parse(body);
+      const data = Object.keys(result).map((key) => {
+        return {
+          tag: key,
+          count: result[key],
+        };
+      });
+      data.sort((a,b) => {
+        return b.count - a.count;
+      });
+      this.setState({results: data});
+    }
+  }
+
+  removeHashtag(input) {
+    if(input.charAt(0) === '#'){
+      return input.slice(1);
+    }
+    return input;
   }
 
   render() {
+    const search = this.state.search;
     const tableBody = this.state.results.map((item) =>
       <tr>
         <td>{item.tag}</td>
         <td>{item.count}</td>
-        <td><a href="/">Link</a></td>
-        <td><a href="/">Link</a></td>
+        <td><a target="_blank" href={'https://twitter.com/search?q=%23' + this.removeHashtag(item.tag)}>{item.tag}</a></td>
+        <td><a target="_blank" href={'https://twitter.com/search?q=%23' + this.removeHashtag(item.tag) + '%20%23' + this.removeHashtag(search)}>{item.tag + ' + ' + search}</a></td>
       </tr>
     );
 
@@ -55,12 +80,14 @@ class App extends Component {
         </div>
 
         <div className="row">
-          <div className="ten columns">
-            <input className="u-max-full-width u-full-width" type="text" value={this.state.search} placeholder="Enter hashtag here (including the # symbol)" onChange={this.handleSearchChange}/>
-          </div>
-          <div className="two columns">
-            <button className="button-primary" onClick={this.runSearch}>Run Search</button>
-          </div>
+          <form>
+            <div className="ten columns">
+              <input className="u-max-full-width u-full-width" type="text" value={this.state.search} placeholder="Enter hashtag here (including the # symbol)" onChange={this.handleSearchChange}/>
+            </div>
+            <div className="two columns">
+              <input className="button-primary" type="submit" value="Run Search" onClick={this.runSearch} />
+            </div>
+          </form>
         </div>
 
 
